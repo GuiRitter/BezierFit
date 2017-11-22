@@ -25,6 +25,11 @@ public class Main {
                     showError(ex);
                 }
             }
+
+            @Override
+            public void onMagnificationChanged(byte magnification) {
+                // TODO
+            }
         };
     }
 }
