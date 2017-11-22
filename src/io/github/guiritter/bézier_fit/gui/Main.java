@@ -30,7 +30,9 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
 
 /**
  *
@@ -46,6 +48,8 @@ public abstract class Main {
     public static final Font font = new Font("DejaVu Sans", 0, 12); // NOI18N
 
     private final JFrame frame;
+
+    private final JSpinner magnificationSpinner;
 
     private final ImageComponent previewComponent;
 
@@ -81,7 +85,13 @@ public abstract class Main {
         return chooser.getSelectedFile();
     }
 
+    public byte getMagnification() {
+        return ((SpinnerNumberModel) magnificationSpinner.getModel()).getNumber().byteValue();
+    }
+
     public abstract void onFileButtonPressed();
+
+    public abstract void onMagnificationChanged(Byte magnification);
 
     public final void setFileText(String text) {
         fileField.setText(text);
@@ -90,6 +100,10 @@ public abstract class Main {
     public final void setImage(BufferedImage image) {
         previewComponent.setImage(image);
         frame.pack();
+    }
+
+    public final void setMagnification(byte magnification) {
+        magnificationSpinner.setValue(magnification);
     }
 
     /**
@@ -206,7 +220,16 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, 0, SPACE_HALF_INT);
         frame.getContentPane().add(magnificationLabel, gridBagConstraints);
 
-        JSpinner magnificationSpinner = new JSpinner();
+        magnificationSpinner = new JSpinner(new SpinnerNumberModel(
+         Byte.valueOf("1"),
+         Byte.valueOf("1"),
+         Byte.valueOf(Byte.MAX_VALUE),
+         Byte.valueOf("1")));
+        ((JSpinner.DefaultEditor) magnificationSpinner.getEditor()).getTextField().setEditable(false);
+        magnificationSpinner.addChangeListener((ChangeEvent e) -> {
+
+            onMagnificationChanged(getMagnification());
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
