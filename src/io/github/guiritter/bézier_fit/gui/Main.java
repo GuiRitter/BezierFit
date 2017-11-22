@@ -91,7 +91,7 @@ public abstract class Main {
 
     public abstract void onFileButtonPressed();
 
-    public abstract void onMagnificationChanged(byte magnification);
+    public abstract void onMagnificationChanged(Byte magnification);
 
     public final void setFileText(String text) {
         fileField.setText(text);
@@ -100,6 +100,10 @@ public abstract class Main {
     public final void setImage(BufferedImage image) {
         previewComponent.setImage(image);
         frame.pack();
+    }
+
+    public final void setMagnification(byte magnification) {
+        magnificationSpinner.setValue(magnification);
     }
 
     /**
@@ -221,6 +225,7 @@ public abstract class Main {
          Byte.valueOf("1"),
          Byte.valueOf(Byte.MAX_VALUE),
          Byte.valueOf("1")));
+        ((JSpinner.DefaultEditor) magnificationSpinner.getEditor()).getTextField().setEditable(false);
         magnificationSpinner.addChangeListener((ChangeEvent e) -> {
 
             onMagnificationChanged(getMagnification());
