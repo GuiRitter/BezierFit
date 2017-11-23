@@ -5,12 +5,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import static java.awt.GridBagConstraints.BOTH;
+import static java.awt.GridBagConstraints.EAST;
 import static java.awt.GridBagConstraints.VERTICAL;
 import static java.awt.GridBagConstraints.WEST;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.NumberFormat;
@@ -49,11 +50,17 @@ public abstract class Main {
 
     private final JFileChooser chooser;
 
+    private final JFormattedTextField errorField;
+
     private final JTextField fileField;
 
     public static final Font font = new Font("DejaVu Sans", 0, 12); // NOI18N
 
     private final JFrame frame;
+
+    private int i;
+
+    private final JFormattedTextField jumpField;
 
     private final JSpinner magnificationSpinner;
 
@@ -79,6 +86,14 @@ public abstract class Main {
      */
     public static final Dimension SPACE_HALF_DIMENSION;
 
+    private final JList<Double> xList;
+
+    private final JList<Double> yList;
+
+    public final double getError() {
+        return ((Number) errorField.getValue()).doubleValue();
+    }
+
     /**
      * Opens a file chooser.
      * @return the selected file, or null otherwise
@@ -91,11 +106,32 @@ public abstract class Main {
         return chooser.getSelectedFile();
     }
 
+    public final Double getJumpMaximum() {
+        try {
+            return ((Number) jumpField.getValue()).doubleValue();
+        } catch (NullPointerException ex) {
+            return null;
+        }
+    }
+
     public byte getMagnification() {
         return ((SpinnerNumberModel) magnificationSpinner.getModel()).getNumber().byteValue();
     }
 
+    public Point2D[] getPointArray() {
+        Point2D pointArray[] = new Point2D[((DefaultListModel<Double>) (xList.getModel())).getSize()];
+        for (i = 0; i < pointArray.length; i++) {
+            pointArray[i] = new Point2D.Double(
+             ((DefaultListModel<Double>) (xList.getModel())).get(i),
+             ((DefaultListModel<Double>) (yList.getModel())).get(i)
+            );
+        }
+        return pointArray;
+    }
+
     public abstract void onFileButtonPressed();
+
+    public abstract void onInitButtonPressed();
 
     public abstract void onMagnificationChanged(Byte magnification);
 
@@ -103,6 +139,10 @@ public abstract class Main {
         fileField.setText(text);
     }
 
+    /**
+     * Sets the preview image and adjusts the interface.
+     * @param image
+     */
     public final void setImage(BufferedImage image) {
         previewComponent.setImage(image);
         frame.pack();
@@ -145,6 +185,14 @@ public abstract class Main {
         showDialog(ex, "warning", WARNING_MESSAGE);
     }
 
+    /**
+     * Shows a dialog displaying a warning.
+     * @param message
+     */
+    public void showWarning(String message) {
+        JOptionPane.showMessageDialog(frame, message, "warning", WARNING_MESSAGE);
+    }
+
     static {
         JFrame.setDefaultLookAndFeelDecorated(true);
         JDialog.setDefaultLookAndFeelDecorated(true);
@@ -185,30 +233,27 @@ public abstract class Main {
         fileButton.addActionListener((ActionEvent e) -> {
 
             onFileButtonPressed();
-            /* TODO
-            file = null;
-            if (chooser.showOpenDialog(frame) != APPROVE_OPTION) {
-            return;
-            }
-            if ((file = chooser.getSelectedFile()) == null) {
-            return;
-            }
-            try {
-            previewComponent.setImage(ImageIO.read(file));
-            } catch (IOException ex) {
-            showError(ex);
-            }
-            frame.pack();
-            /**/
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = VERTICAL;
         gridBagConstraints.anchor = WEST;
         gridBagConstraints.insets = new Insets(SPACE_INT, SPACE_INT, 0, SPACE_HALF_INT);
         frame.getContentPane().add(fileButton, gridBagConstraints);
+
+        JButton initButton = new JButton("init");
+        initButton.addActionListener((ActionEvent e) -> {
+
+            onInitButtonPressed();
+        });
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = VERTICAL;
+        gridBagConstraints.anchor = EAST;
+        gridBagConstraints.insets = new Insets(SPACE_INT, SPACE_INT, 0, SPACE_HALF_INT);
+        frame.getContentPane().add(initButton, gridBagConstraints);
 
         fileField = new JTextField();
         fileField.setEditable(false);
@@ -258,7 +303,7 @@ public abstract class Main {
         NumberFormat format = NumberFormat.getNumberInstance();
         format.setMaximumFractionDigits(Integer.MAX_VALUE);
 
-        JFormattedTextField jumpField = new JFormattedTextField(format);
+        jumpField = new JFormattedTextField(format);
 //        jumpField.addPropertyChangeListener("value", new OutputListener(outputMinimumXField, outputMinimumX, outputMinimumX, outputMaximumX, fitX, width));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -267,7 +312,7 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(0, SPACE_HALF_INT, SPACE_HALF_INT, SPACE_HALF_INT);
         frame.getContentPane().add(jumpField, gridBagConstraints);
 
-        JList<Double> xList = new JList<>(new DefaultListModel<>());
+        xList = new JList<>(new DefaultListModel<>());
         xList.setSelectionMode(SINGLE_SELECTION);
         ((DefaultListCellRenderer) xList.getCellRenderer()).setHorizontalAlignment(CENTER);
         JScrollPane xPane = new JScrollPane(xList);
@@ -281,7 +326,7 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, SPACE_HALF_INT, 0);
         frame.getContentPane().add(xPane, gridBagConstraints);
 
-        JList<Double> yList = new JList<>(new DefaultListModel<>());
+        yList = new JList<>(new DefaultListModel<>());
         yList.setSelectionMode(SINGLE_SELECTION);
         ((DefaultListCellRenderer) yList.getCellRenderer()).setHorizontalAlignment(CENTER);
         JScrollPane yPane = new JScrollPane(yList);
@@ -333,23 +378,18 @@ public abstract class Main {
         frame.getContentPane().add(yField, gridBagConstraints);
 
         JButton addButton = new JButton("add");
-        addButton.addActionListener(new ActionListener() {
+        addButton.addActionListener((ActionEvent e) -> {
 
-            private int i;
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                i = xList.getSelectedIndex();
-                if (i < 0) {
-                    ((DefaultListModel<Double>) (xList.getModel())).addElement(((Number) xField.getValue()).doubleValue());
-                    ((DefaultListModel<Double>) (yList.getModel())).addElement(((Number) yField.getValue()).doubleValue());
-                } else {
-                    ((DefaultListModel<Double>) (xList.getModel())).add(i, ((Number) xField.getValue()).doubleValue());
-                    ((DefaultListModel<Double>) (yList.getModel())).add(i, ((Number) yField.getValue()).doubleValue());
-                }
-                frame.revalidate();
-                frame.repaint();
+            i = xList.getSelectedIndex();
+            if (i < 0) {
+                ((DefaultListModel<Double>) (xList.getModel())).addElement(((Number) xField.getValue()).doubleValue());
+                ((DefaultListModel<Double>) (yList.getModel())).addElement(((Number) yField.getValue()).doubleValue());
+            } else {
+                ((DefaultListModel<Double>) (xList.getModel())).add(i, ((Number) xField.getValue()).doubleValue());
+                ((DefaultListModel<Double>) (yList.getModel())).add(i, ((Number) yField.getValue()).doubleValue());
             }
+            frame.revalidate();
+            frame.repaint();
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -359,17 +399,12 @@ public abstract class Main {
         frame.getContentPane().add(addButton, gridBagConstraints);
 
         JButton removeButton = new JButton("remove");
-        removeButton.addActionListener(new ActionListener() {
+        removeButton.addActionListener((ActionEvent e) -> {
 
-            private int i;
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                i = xList.getSelectedIndex();
-                if (i > -1) {
-                    ((DefaultListModel<Double>) (xList.getModel())).remove(i);
-                    ((DefaultListModel<Double>) (yList.getModel())).remove(i);
-                }
+            i = xList.getSelectedIndex();
+            if (i > -1) {
+                ((DefaultListModel<Double>) (xList.getModel())).remove(i);
+                ((DefaultListModel<Double>) (yList.getModel())).remove(i);
             }
         });
         gridBagConstraints = new GridBagConstraints();
@@ -380,7 +415,7 @@ public abstract class Main {
         frame.getContentPane().add(removeButton, gridBagConstraints);
 
         JLabel curvePointAmountLabel = new JLabel();
-        curvePointAmountLabel.setText("point amount:");
+        curvePointAmountLabel.setText("curve density:");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -389,7 +424,7 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, 0, SPACE_HALF_INT);
         frame.getContentPane().add(curvePointAmountLabel, gridBagConstraints);
 
-        JSpinner curvePointAmountSpinner = new JSpinner();
+        JSpinner curvePointAmountSpinner = new JSpinner(new SpinnerNumberModel(100, 0, Long.MAX_VALUE, 1));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -406,7 +441,7 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_HALF_INT, 0, SPACE_HALF_INT);
         frame.getContentPane().add(errorLabel, gridBagConstraints);
 
-        JFormattedTextField errorField = new JFormattedTextField(format);
+        errorField = new JFormattedTextField(format);
         errorField.setText("init");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;

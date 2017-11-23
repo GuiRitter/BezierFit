@@ -1,5 +1,6 @@
 package io.github.guiritter.bézier_fit;
 
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_BYTE_GRAY;
 import java.io.File;
@@ -13,10 +14,18 @@ import javax.imageio.ImageIO;
  */
 public class Main {
 
+    private static final Fitter fitter;
+
+    private static Double jumpMaximum;
+
+    private static Point2D pointArray[];
+
     private static final LinkedList<BufferedImage> targetImageList;
 
     static {
         targetImageList = new LinkedList<>();
+
+        fitter = new Fitter();
 
         io.github.guiritter.bézier_fit.gui.Main GUI = new io.github.guiritter.bézier_fit.gui.Main() {
 
@@ -51,6 +60,19 @@ public class Main {
                 } catch (IOException ex) {
                     showError(ex);
                 }
+            }
+
+            @Override
+            public void onInitButtonPressed() {
+                jumpMaximum = getJumpMaximum();
+                if (jumpMaximum == null) {
+                    showWarning("please insert a maximum jump value");
+                }
+                pointArray = getPointArray();
+                if (pointArray.length < 2) {
+                    showWarning("please insert at least two points");
+                }
+                (new Thread(fitter)).start();
             }
 
             @Override
