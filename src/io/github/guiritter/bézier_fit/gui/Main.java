@@ -1,6 +1,6 @@
 package io.github.guiritter.bézier_fit.gui;
 
-import io.github.guiritter.imagecomponent.ImageComponent;
+import io.github.guiritter.imagecomponent.ImageComponentMultiple;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -52,6 +52,8 @@ public abstract class Main {
 
     private final JFileChooser chooser;
 
+    private final JSpinner curvePointAmountSpinner;
+
     private final JFormattedTextField errorField;
 
     private final JButton fileButton;
@@ -70,7 +72,7 @@ public abstract class Main {
 
     private final JSpinner magnificationSpinner;
 
-    private final ImageComponent previewComponent;
+    private final ImageComponentMultiple previewComponent;
 
     private final JButton removeButton;
 
@@ -97,6 +99,10 @@ public abstract class Main {
     private final JList<Double> xList;
 
     private final JList<Double> yList;
+
+    public double getCurveStep() {
+        return 1d / ((SpinnerNumberModel) curvePointAmountSpinner.getModel()).getNumber().doubleValue();
+    }
 
     public final double getError() {
         return ((Number) errorField.getValue()).doubleValue();
@@ -137,11 +143,18 @@ public abstract class Main {
         return pointArray;
     }
 
+    public abstract void onCurveStepChanged(double curveStep);
+
     public abstract void onFileButtonPressed();
 
     public abstract void onInitButtonPressed();
 
     public abstract void onMagnificationChanged(Byte magnification);
+
+    public final void refresh() {
+        frame.revalidate();
+        frame.repaint();
+    }
 
     public final void setEnabled(boolean enabled) {
         fileButton.setEnabled(enabled);
@@ -157,14 +170,24 @@ public abstract class Main {
 
     /**
      * Sets the preview image and adjusts the interface.
-     * @param image
+     * @param targetImage
      */
-    public final void setImage(BufferedImage image) {
-        previewComponent.setImage(image);
+    public final void setImage(BufferedImage targetImage) {
+        previewComponent.images.set(0, targetImage);
+        previewComponent.update();
         frame.pack();
         frame.setLocationRelativeTo(null);
-        frame.revalidate();
-        frame.repaint();
+        refresh();
+    }
+
+    /**
+     * Sets the preview image and adjusts the interface.
+     * @param targetImage
+     * @param fittedImage
+     */
+    public final void setImage(BufferedImage targetImage, BufferedImage fittedImage) {
+        previewComponent.images.set(1, fittedImage);
+        setImage(targetImage);
     }
 
     public final void setMagnification(byte magnification) {
@@ -320,6 +343,7 @@ public abstract class Main {
         format.setMaximumFractionDigits(Integer.MAX_VALUE);
 
         jumpField = new JFormattedTextField(format);
+        jumpField.setValue(5);
 //        jumpField.addPropertyChangeListener("value", new OutputListener(outputMinimumXField, outputMinimumX, outputMinimumX, outputMaximumX, fitX, width));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -440,13 +464,26 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, 0, SPACE_HALF_INT);
         frame.getContentPane().add(curvePointAmountLabel, gridBagConstraints);
 
-        JSpinner curvePointAmountSpinner = new JSpinner(new SpinnerNumberModel(100, 0, Long.MAX_VALUE, 1));
+        curvePointAmountSpinner = new JSpinner(new SpinnerNumberModel(100, 0, Long.MAX_VALUE, 1));
+        curvePointAmountSpinner.addChangeListener((ChangeEvent e) -> {
+
+            onCurveStepChanged(getCurveStep());
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = BOTH;
         gridBagConstraints.insets = new Insets(0, SPACE_INT, SPACE_INT, SPACE_HALF_INT);
         frame.getContentPane().add(curvePointAmountSpinner, gridBagConstraints);
+
+        //* TODO test
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(19d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(10d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(19d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(00d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(26d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(51d);
+        /**/
 
         JLabel errorLabel = new JLabel("error:");
         gridBagConstraints = new GridBagConstraints();
@@ -466,7 +503,9 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(0, SPACE_HALF_INT, SPACE_INT, SPACE_HALF_INT);
         frame.getContentPane().add(errorField, gridBagConstraints);
 
-        previewComponent = new ImageComponent();
+        previewComponent = new ImageComponentMultiple();
+        previewComponent.images.add(null);
+        previewComponent.images.add(null);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;

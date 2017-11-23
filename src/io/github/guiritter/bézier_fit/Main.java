@@ -3,6 +3,7 @@ package io.github.guiritter.bézier_fit;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_BYTE_GRAY;
+import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +16,9 @@ import javax.imageio.ImageIO;
  */
 public class Main {
 
-    private static final Fitter fitter;
+    private static Fitter fitter;
+
+    static final io.github.guiritter.bézier_fit.gui.Main GUI;
 
     private static Double jumpMaximum;
 
@@ -28,19 +31,27 @@ public class Main {
     static {
         targetImageList = new LinkedList<>();
 
-        fitter = new Fitter();
-
-        io.github.guiritter.bézier_fit.gui.Main GUI = new io.github.guiritter.bézier_fit.gui.Main() {
+        GUI = new io.github.guiritter.bézier_fit.gui.Main() {
 
             private int color[];
 
             private File file;
 
+            private BufferedImage fittedImage;
+
+            private WritableRaster fittedRaster;
+
             private int height;
 
-            private BufferedImage image;
+            /**
+             * Time step used to compute the curve. Inverse to the amount of points
+             * in the curve.
+             */
+            private final Wrapper<Double> step = new Wrapper<>();
 
-            private WritableRaster raster;
+            private BufferedImage targetImage;
+
+            private WritableRaster targetRaster;
 
             private int width;
 
@@ -49,31 +60,41 @@ public class Main {
             private int y;
 
             @Override
+            public void onCurveStepChanged(double curveStep) {
+            }
+
+            @Override
             public void onFileButtonPressed() {
                 try {
                     file = getFile();
                     if (file == null) {
                         return;
                     }
-                    image = ImageIO.read(file);
-                    if (image == null) {
+                    targetImage = ImageIO.read(file);
+                    if (targetImage == null) {
                         return;
                     }
-                    width = image.getWidth();
-                    height = image.getHeight();
+                    width = targetImage.getWidth();
+                    height = targetImage.getHeight();
                     targetMatrix = new boolean[height][width];
-                    raster = image.getRaster();
-                    color = raster.getPixel(0, 0, (int[]) null);
+                    targetRaster = targetImage.getRaster();
+                    color = targetRaster.getPixel(0, 0, (int[]) null);
                     for (y = 0; y < height; y++) {
                         for (x = 0; x < width; x++) {
-                            raster.getPixel(0, 0, color);
+                            targetRaster.getPixel(0, 0, color);
                             targetMatrix[y][x] = color[0] > 127;
                         }
                     }
-                    setImage(image);
-                    setFileText(file.getName());
+                    fittedImage = new BufferedImage(width, height, TYPE_INT_ARGB);
+                    fittedRaster = fittedImage.getRaster();
+                    setImage(targetImage, fittedImage);
+                    try {
+                        setFileText(file.getCanonicalPath());
+                    } catch (IOException ex) {
+                        setFileText(file.getAbsolutePath());
+                    }
                     targetImageList.clear();
-                    targetImageList.add(image);
+                    targetImageList.add(targetImage);
                     setMagnification((byte) 1);
                 } catch (IOException ex) {
                     showError(ex);
@@ -85,16 +106,32 @@ public class Main {
                 jumpMaximum = getJumpMaximum();
                 if (jumpMaximum == null) {
                     showWarning("please insert a maximum jump value");
+                    return;
                 }
                 pointArray = getPointArray();
                 if (pointArray.length < 2) {
                     showWarning("please insert at least two points");
+                    return;
                 }
                 if (targetMatrix == null) {
                     showWarning("please insert an image");
+                    return;
                 }
                 setEnabled(false);
-                (new Thread(fitter)).start();
+                step.value = getCurveStep();
+                fitter = new Fitter(
+                 targetMatrix,
+                 pointArray,
+                 fittedRaster,
+                 step,
+                 getMagnification()
+                ){
+                    @Override
+                    public void refresh() {
+                        GUI.refresh();
+                    }
+                };
+                (new Thread(fitter, "fitter")).start();
             }
 
             @Override
@@ -105,15 +142,17 @@ public class Main {
                 if (magnification == (targetImageList.size() + 1)) {
                     width = magnification * targetImageList.getFirst().getWidth();
                     height = magnification * targetImageList.getFirst().getHeight();
-                    image = new BufferedImage(width, height, TYPE_BYTE_GRAY);
+                    targetImage = new BufferedImage(width, height, TYPE_BYTE_GRAY);
+                    fittedImage = new BufferedImage(width, height, TYPE_INT_ARGB);
+                    fittedRaster = fittedImage.getRaster();
                     for (y = 0; y < height; y++) {
                         for (x = 0; x < width; x++) {
-                            image.setRGB(x, y, targetImageList.getFirst().getRGB(x / magnification, y / magnification));
+                            targetImage.setRGB(x, y, targetImageList.getFirst().getRGB(x / magnification, y / magnification));
                         }
                     }
-                    targetImageList.addLast(image);
+                    targetImageList.addLast(targetImage);
                 }
-                setImage(targetImageList.get(magnification - 1));
+                setImage(targetImageList.get(magnification - 1), fittedImage);
             }
         };
     }
