@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.NumberFormat;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -31,9 +32,11 @@ import static javax.swing.JOptionPane.WARNING_MESSAGE;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import static javax.swing.ListSelectionModel.SINGLE_SELECTION;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
 import javax.swing.SpinnerNumberModel;
+import static javax.swing.SwingConstants.CENTER;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 
@@ -264,10 +267,41 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(0, SPACE_HALF_INT, SPACE_HALF_INT, SPACE_HALF_INT);
         frame.getContentPane().add(jumpField, gridBagConstraints);
 
-        JLabel xLabel = new JLabel("x:");
+        JList<Double> xList = new JList<>(new DefaultListModel<>());
+        xList.setSelectionMode(SINGLE_SELECTION);
+        ((DefaultListCellRenderer) xList.getCellRenderer()).setHorizontalAlignment(CENTER);
+        JScrollPane xPane = new JScrollPane(xList);
+        xPane.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_NEVER);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, SPACE_HALF_INT, 0);
+        frame.getContentPane().add(xPane, gridBagConstraints);
+
+        JList<Double> yList = new JList<>(new DefaultListModel<>());
+        yList.setSelectionMode(SINGLE_SELECTION);
+        ((DefaultListCellRenderer) yList.getCellRenderer()).setHorizontalAlignment(CENTER);
+        JScrollPane yPane = new JScrollPane(yList);
+        yPane.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_ALWAYS);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new Insets(SPACE_HALF_INT, 0, SPACE_HALF_INT, SPACE_HALF_INT);
+        frame.getContentPane().add(yPane, gridBagConstraints);
+
+        yList.setSelectionModel(xList.getSelectionModel());
+        yPane.setVerticalScrollBar(xPane.getVerticalScrollBar());
+
+        JLabel xLabel = new JLabel("x:");
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = BOTH;
         gridBagConstraints.anchor = WEST;
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, 0, SPACE_HALF_INT);
@@ -276,7 +310,7 @@ public abstract class Main {
         JFormattedTextField xField = new JFormattedTextField(format);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = BOTH;
         gridBagConstraints.insets = new Insets(0, SPACE_INT, SPACE_HALF_INT, SPACE_HALF_INT);
         frame.getContentPane().add(xField, gridBagConstraints);
@@ -284,7 +318,7 @@ public abstract class Main {
         JLabel yLabel = new JLabel("y:");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = BOTH;
         gridBagConstraints.anchor = WEST;
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_HALF_INT, 0, SPACE_HALF_INT);
@@ -293,58 +327,50 @@ public abstract class Main {
         JFormattedTextField yField = new JFormattedTextField(format);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = BOTH;
         gridBagConstraints.insets = new Insets(0, SPACE_HALF_INT, SPACE_HALF_INT, SPACE_HALF_INT);
         frame.getContentPane().add(yField, gridBagConstraints);
 
-        JList<Double> xList = new JList<>(new DefaultListModel<>());
-        JScrollPane xPane = new JScrollPane(xList);
-        xPane.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_NEVER);
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, SPACE_HALF_INT, 0);
-        frame.getContentPane().add(xPane, gridBagConstraints);
+        JButton addButton = new JButton("add");
+        addButton.addActionListener(new ActionListener() {
 
-        JList<Double> yList = new JList<>(new DefaultListModel<>());
-        JScrollPane yPane = new JScrollPane(yList);
-        yPane.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_ALWAYS);
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new Insets(SPACE_HALF_INT, 0, SPACE_HALF_INT, SPACE_HALF_INT);
-        frame.getContentPane().add(yPane, gridBagConstraints);
+            private int i;
 
-        {
-            ActionListener listener = new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                i = xList.getSelectedIndex();
+                if (i < 0) {
                     ((DefaultListModel<Double>) (xList.getModel())).addElement(((Number) xField.getValue()).doubleValue());
                     ((DefaultListModel<Double>) (yList.getModel())).addElement(((Number) yField.getValue()).doubleValue());
-                    frame.revalidate();
-                    frame.repaint();
+                } else {
+                    ((DefaultListModel<Double>) (xList.getModel())).add(i, ((Number) xField.getValue()).doubleValue());
+                    ((DefaultListModel<Double>) (yList.getModel())).add(i, ((Number) yField.getValue()).doubleValue());
                 }
-            };
-            xField.addActionListener(listener);
-            yField.addActionListener(listener);
-        }
+                frame.revalidate();
+                frame.repaint();
+            }
+        });
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = BOTH;
+        gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, SPACE_HALF_INT, SPACE_HALF_INT);
+        frame.getContentPane().add(addButton, gridBagConstraints);
 
-        yList.setSelectionModel(xList.getSelectionModel());
-        yPane.setVerticalScrollBar(xPane.getVerticalScrollBar());
+        JButton removeButton = new JButton("remove");
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = BOTH;
+        gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_HALF_INT, SPACE_HALF_INT, SPACE_HALF_INT);
+        frame.getContentPane().add(removeButton, gridBagConstraints);
 
         JLabel curvePointAmountLabel = new JLabel();
         curvePointAmountLabel.setText("point amount:");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = BOTH;
         gridBagConstraints.anchor = WEST;
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, 0, SPACE_HALF_INT);
@@ -353,7 +379,7 @@ public abstract class Main {
         JSpinner curvePointAmountSpinner = new JSpinner();
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = BOTH;
         gridBagConstraints.insets = new Insets(0, SPACE_INT, SPACE_INT, SPACE_HALF_INT);
         frame.getContentPane().add(curvePointAmountSpinner, gridBagConstraints);
@@ -361,7 +387,7 @@ public abstract class Main {
         JLabel errorLabel = new JLabel("error:");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = BOTH;
         gridBagConstraints.anchor = WEST;
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_HALF_INT, 0, SPACE_HALF_INT);
@@ -371,7 +397,7 @@ public abstract class Main {
         errorField.setText("init");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = BOTH;
         gridBagConstraints.insets = new Insets(0, SPACE_HALF_INT, SPACE_INT, SPACE_HALF_INT);
         frame.getContentPane().add(errorField, gridBagConstraints);
@@ -380,7 +406,7 @@ public abstract class Main {
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 9;
+        gridBagConstraints.gridheight = 10;
         gridBagConstraints.insets = new Insets(SPACE_INT, SPACE_HALF_INT, SPACE_INT, SPACE_INT);
         frame.getContentPane().add(previewComponent, gridBagConstraints);
 
