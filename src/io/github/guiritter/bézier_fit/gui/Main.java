@@ -359,6 +359,19 @@ public abstract class Main {
         frame.getContentPane().add(addButton, gridBagConstraints);
 
         JButton removeButton = new JButton("remove");
+        removeButton.addActionListener(new ActionListener() {
+
+            private int i;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                i = xList.getSelectedIndex();
+                if (i > -1) {
+                    ((DefaultListModel<Double>) (xList.getModel())).remove(i);
+                    ((DefaultListModel<Double>) (yList.getModel())).remove(i);
+                }
+            }
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
