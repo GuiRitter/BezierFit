@@ -7,7 +7,9 @@ import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 
 /**
@@ -22,11 +24,13 @@ public class Main {
 
     private static Double jumpMaximum;
 
-    private static Point2D pointArray[];
+    private static final ConcurrentHashMap<Boolean, Double> jumpMaximumWrapper = new ConcurrentHashMap<>();
+
+    private static Point2D pointControlArray[];
+
+    private static final HashSet<Point2D> pointCurveSet = new HashSet<>();
 
     private static final LinkedList<BufferedImage> targetImageList;
-
-    private static boolean targetMatrix[][];
 
     static {
         targetImageList = new LinkedList<>();
@@ -41,7 +45,9 @@ public class Main {
 
             private WritableRaster fittedRaster;
 
-            private int height;
+            private int heightMagnified;
+
+            private int heightOriginal;
 
             /**
              * Time step used to compute the curve. Inverse to the amount of points
@@ -53,7 +59,9 @@ public class Main {
 
             private WritableRaster targetRaster;
 
-            private int width;
+            private int widthMagnified;
+
+            private int widthOriginal;
 
             private int x;
 
@@ -74,18 +82,20 @@ public class Main {
                     if (targetImage == null) {
                         return;
                     }
-                    width = targetImage.getWidth();
-                    height = targetImage.getHeight();
-                    targetMatrix = new boolean[height][width];
+                    widthOriginal = targetImage.getWidth();
+                    heightOriginal = targetImage.getHeight();
+                    pointCurveSet.clear();
                     targetRaster = targetImage.getRaster();
                     color = targetRaster.getPixel(0, 0, (int[]) null);
-                    for (y = 0; y < height; y++) {
-                        for (x = 0; x < width; x++) {
+                    for (y = 0; y < heightOriginal; y++) {
+                        for (x = 0; x < widthOriginal; x++) {
                             targetRaster.getPixel(x, y, color);
-                            targetMatrix[y][x] = color[0] > 127;
+                            if (color[0] > 127) {
+                                pointCurveSet.add(new Point2D.Double(x, y));
+                            }
                         }
                     }
-                    fittedImage = new BufferedImage(width, height, TYPE_INT_ARGB);
+                    fittedImage = new BufferedImage(widthOriginal, heightOriginal, TYPE_INT_ARGB);
                     fittedRaster = fittedImage.getRaster();
                     setImage(targetImage, fittedImage);
                     try {
@@ -108,20 +118,23 @@ public class Main {
                     showWarning("please insert a maximum jump value");
                     return;
                 }
-                pointArray = getPointArray();
-                if (pointArray.length < 2) {
+                jumpMaximumWrapper.put(true, jumpMaximum);
+                pointControlArray = getPointArray();
+                if (pointControlArray.length < 2) {
                     showWarning("please insert at least two points");
                     return;
                 }
-                if (targetMatrix == null) {
+                if (pointCurveSet == null) {
                     showWarning("please insert an image");
                     return;
                 }
                 setEnabled(false);
                 step.value = getCurveStep();
                 fitter = new Fitter(
-                 targetMatrix,
-                 pointArray,
+                 pointCurveSet,
+                 widthOriginal, heightOriginal,
+                 pointControlArray,
+                 jumpMaximumWrapper,
                  fittedRaster,
                  step,
                  getMagnification()
@@ -140,13 +153,13 @@ public class Main {
                     return;
                 }
                 if (magnification == (targetImageList.size() + 1)) {
-                    width = magnification * targetImageList.getFirst().getWidth();
-                    height = magnification * targetImageList.getFirst().getHeight();
-                    targetImage = new BufferedImage(width, height, TYPE_BYTE_GRAY);
-                    fittedImage = new BufferedImage(width, height, TYPE_INT_ARGB);
+                    widthMagnified = magnification * targetImageList.getFirst().getWidth();
+                    heightMagnified = magnification * targetImageList.getFirst().getHeight();
+                    targetImage = new BufferedImage(widthMagnified, heightMagnified, TYPE_BYTE_GRAY);
+                    fittedImage = new BufferedImage(widthMagnified, heightMagnified, TYPE_INT_ARGB);
                     fittedRaster = fittedImage.getRaster();
-                    for (y = 0; y < height; y++) {
-                        for (x = 0; x < width; x++) {
+                    for (y = 0; y < heightMagnified; y++) {
+                        for (x = 0; x < widthMagnified; x++) {
                             targetImage.setRGB(x, y, targetImageList.getFirst().getRGB(x / magnification, y / magnification));
                         }
                     }
