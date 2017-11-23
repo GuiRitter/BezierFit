@@ -81,7 +81,7 @@ public class Main {
                     color = targetRaster.getPixel(0, 0, (int[]) null);
                     for (y = 0; y < height; y++) {
                         for (x = 0; x < width; x++) {
-                            targetRaster.getPixel(0, 0, color);
+                            targetRaster.getPixel(x, y, color);
                             targetMatrix[y][x] = color[0] > 127;
                         }
                     }
