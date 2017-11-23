@@ -3,6 +3,7 @@ package io.github.guiritter.bézier_fit;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import static java.awt.image.BufferedImage.TYPE_BYTE_GRAY;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -22,6 +23,8 @@ public class Main {
 
     private static final LinkedList<BufferedImage> targetImageList;
 
+    private static boolean targetMatrix[][];
+
     static {
         targetImageList = new LinkedList<>();
 
@@ -29,11 +32,15 @@ public class Main {
 
         io.github.guiritter.bézier_fit.gui.Main GUI = new io.github.guiritter.bézier_fit.gui.Main() {
 
+            private int color[];
+
             private File file;
 
             private int height;
 
             private BufferedImage image;
+
+            private WritableRaster raster;
 
             private int width;
 
@@ -51,6 +58,17 @@ public class Main {
                     image = ImageIO.read(file);
                     if (image == null) {
                         return;
+                    }
+                    width = image.getWidth();
+                    height = image.getHeight();
+                    targetMatrix = new boolean[height][width];
+                    raster = image.getRaster();
+                    color = raster.getPixel(0, 0, (int[]) null);
+                    for (y = 0; y < height; y++) {
+                        for (x = 0; x < width; x++) {
+                            raster.getPixel(0, 0, color);
+                            targetMatrix[y][x] = color[0] > 127;
+                        }
                     }
                     setImage(image);
                     setFileText(file.getName());
@@ -72,6 +90,10 @@ public class Main {
                 if (pointArray.length < 2) {
                     showWarning("please insert at least two points");
                 }
+                if (targetMatrix == null) {
+                    showWarning("please insert an image");
+                }
+                setEnabled(false);
                 (new Thread(fitter)).start();
             }
 

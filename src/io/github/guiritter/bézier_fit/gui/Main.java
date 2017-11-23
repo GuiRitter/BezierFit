@@ -48,9 +48,13 @@ import javax.swing.event.ChangeEvent;
 @SuppressWarnings("CallToPrintStackTrace")
 public abstract class Main {
 
+    private final JButton addButton;
+
     private final JFileChooser chooser;
 
     private final JFormattedTextField errorField;
+
+    private final JButton fileButton;
 
     private final JTextField fileField;
 
@@ -60,11 +64,15 @@ public abstract class Main {
 
     private int i;
 
+    private final JButton initButton;
+
     private final JFormattedTextField jumpField;
 
     private final JSpinner magnificationSpinner;
 
     private final ImageComponent previewComponent;
+
+    private final JButton removeButton;
 
     /**
      * Distance between graphical user interface components.
@@ -134,6 +142,14 @@ public abstract class Main {
     public abstract void onInitButtonPressed();
 
     public abstract void onMagnificationChanged(Byte magnification);
+
+    public final void setEnabled(boolean enabled) {
+        fileButton.setEnabled(enabled);
+        initButton.setEnabled(enabled);
+        magnificationSpinner.setEnabled(enabled);
+        addButton.setEnabled(enabled);
+        removeButton.setEnabled(enabled);
+    }
 
     public final void setFileText(String text) {
         fileField.setText(text);
@@ -229,7 +245,7 @@ public abstract class Main {
 
         frame.getContentPane().setLayout(new GridBagLayout());
 
-        JButton fileButton = new JButton("file:");
+        fileButton = new JButton("file:");
         fileButton.addActionListener((ActionEvent e) -> {
 
             onFileButtonPressed();
@@ -242,7 +258,7 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_INT, SPACE_INT, 0, SPACE_HALF_INT);
         frame.getContentPane().add(fileButton, gridBagConstraints);
 
-        JButton initButton = new JButton("init");
+        initButton = new JButton("init");
         initButton.addActionListener((ActionEvent e) -> {
 
             onInitButtonPressed();
@@ -377,7 +393,7 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(0, SPACE_HALF_INT, SPACE_HALF_INT, SPACE_HALF_INT);
         frame.getContentPane().add(yField, gridBagConstraints);
 
-        JButton addButton = new JButton("add");
+        addButton = new JButton("add");
         addButton.addActionListener((ActionEvent e) -> {
 
             i = xList.getSelectedIndex();
@@ -398,7 +414,7 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, SPACE_HALF_INT, SPACE_HALF_INT);
         frame.getContentPane().add(addButton, gridBagConstraints);
 
-        JButton removeButton = new JButton("remove");
+        removeButton = new JButton("remove");
         removeButton.addActionListener((ActionEvent e) -> {
 
             i = xList.getSelectedIndex();
@@ -442,7 +458,7 @@ public abstract class Main {
         frame.getContentPane().add(errorLabel, gridBagConstraints);
 
         errorField = new JFormattedTextField(format);
-        errorField.setText("init");
+        errorField.setEditable(false);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
