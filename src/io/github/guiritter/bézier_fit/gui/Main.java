@@ -10,8 +10,11 @@ import static java.awt.GridBagConstraints.WEST;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.text.NumberFormat;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -249,7 +252,11 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_HALF_INT, 0, SPACE_HALF_INT);
         frame.getContentPane().add(jumpLabel, gridBagConstraints);
 
-        JFormattedTextField jumpField = new JFormattedTextField();
+        NumberFormat format = NumberFormat.getNumberInstance();
+        format.setMaximumFractionDigits(Integer.MAX_VALUE);
+
+        JFormattedTextField jumpField = new JFormattedTextField(format);
+//        jumpField.addPropertyChangeListener("value", new OutputListener(outputMinimumXField, outputMinimumX, outputMinimumX, outputMaximumX, fitX, width));
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -266,7 +273,7 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, 0, SPACE_HALF_INT);
         frame.getContentPane().add(xLabel, gridBagConstraints);
 
-        JFormattedTextField xField = new JFormattedTextField();
+        JFormattedTextField xField = new JFormattedTextField(format);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -283,7 +290,7 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_HALF_INT, 0, SPACE_HALF_INT);
         frame.getContentPane().add(yLabel, gridBagConstraints);
 
-        JFormattedTextField yField = new JFormattedTextField();
+        JFormattedTextField yField = new JFormattedTextField(format);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -291,10 +298,9 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(0, SPACE_HALF_INT, SPACE_HALF_INT, SPACE_HALF_INT);
         frame.getContentPane().add(yField, gridBagConstraints);
 
-        JList xList = new JList<>();
-        JScrollPane xPane = new JScrollPane();
+        JList<Double> xList = new JList<>(new DefaultListModel<>());
+        JScrollPane xPane = new JScrollPane(xList);
         xPane.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_NEVER);
-        xPane.setViewportView(xList);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -304,10 +310,9 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, SPACE_HALF_INT, 0);
         frame.getContentPane().add(xPane, gridBagConstraints);
 
-        JList yList = new JList<>();
-        JScrollPane yPane = new JScrollPane();
+        JList<Double> yList = new JList<>(new DefaultListModel<>());
+        JScrollPane yPane = new JScrollPane(yList);
         yPane.setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_ALWAYS);
-        yPane.setViewportView(yList);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -317,6 +322,22 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, 0, SPACE_HALF_INT, SPACE_HALF_INT);
         frame.getContentPane().add(yPane, gridBagConstraints);
 
+        {
+            ActionListener listener = new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ((DefaultListModel<Double>) (xList.getModel())).addElement(((Number) xField.getValue()).doubleValue());
+                    ((DefaultListModel<Double>) (yList.getModel())).addElement(((Number) yField.getValue()).doubleValue());
+                    frame.revalidate();
+                    frame.repaint();
+                }
+            };
+            xField.addActionListener(listener);
+            yField.addActionListener(listener);
+        }
+
+        yList.setSelectionModel(xList.getSelectionModel());
         yPane.setVerticalScrollBar(xPane.getVerticalScrollBar());
 
         JLabel curvePointAmountLabel = new JLabel();
@@ -346,7 +367,8 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_HALF_INT, 0, SPACE_HALF_INT);
         frame.getContentPane().add(errorLabel, gridBagConstraints);
 
-        JFormattedTextField errorField = new JFormattedTextField("init");
+        JFormattedTextField errorField = new JFormattedTextField(format);
+        errorField.setText("init");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
