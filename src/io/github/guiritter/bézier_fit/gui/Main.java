@@ -100,6 +100,9 @@ public abstract class Main {
     public final void setImage(BufferedImage image) {
         previewComponent.setImage(image);
         frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.revalidate();
+        frame.repaint();
     }
 
     public final void setMagnification(byte magnification) {
