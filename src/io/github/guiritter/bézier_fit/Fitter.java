@@ -37,10 +37,6 @@ public abstract class Fitter implements Runnable{
 
     private double distanceMaximum;
 
-    private double distanceMaximumFittedToTarget;
-
-    private double distanceMaximumTargetToFitted;
-
     private double distanceMinimum;
 
     private final WritableRaster fittedRaster;
@@ -61,7 +57,7 @@ public abstract class Fitter implements Runnable{
 
     private final Point2D fittedPointControlArray[];
 
-    private final HashSet<Point2D> pointCurveSet = new HashSet<>(); // TODO why HashSet? look for the most eficient collection disregarding order
+    private final HashSet<Point2D> pointCurveSet = new HashSet<>();
 
     private double radius;
 
@@ -107,28 +103,23 @@ public abstract class Fitter implements Runnable{
 
     private int yLow;
 
-    public abstract void refresh();
+    public abstract void refresh(double distance);
 
-    public static final double distanceEuclidean(double x0, double y0, double x1, double y1) {
-        return sqrt(pow(x1 - x0, 2) + pow(y1 - y0, 2));
+    public static final double distanceEuclidean(Point2D point0, Point2D point1) {
+        return sqrt(pow(point1.getX() - point0.getX(), 2) + pow(point1.getY() - point0.getY(), 2));
     }
 
     public final double distanceHausdorff(Collection<Point2D> set0, Collection<Point2D> set1) {
-        distanceMaximum = NEGATIVE_INFINITY;
+        double distanceMaximumLocal = NEGATIVE_INFINITY;
         for (Point2D point0 : set0) {
             distanceMinimum = POSITIVE_INFINITY;
             for (Point2D point1 : set1) {
-                distance = distanceEuclidean(
-                 point0.getX(),
-                 point0.getY(),
-                 point1.getX(),
-                 point1.getY()
-                );
+                distance = distanceEuclidean(point0, point1);
                 distanceMinimum = min(distanceMinimum, distance);
             }
-            distanceMaximum = max(distanceMaximum, distanceMinimum);
+            distanceMaximumLocal = max(distanceMaximumLocal, distanceMinimum);
         }
-        return distanceMaximum;
+        return distanceMaximumLocal;
     }
 
     @Override
@@ -148,10 +139,6 @@ public abstract class Fitter implements Runnable{
                 curve.op(t);
                 x = (int) point.getX();
                 y = (int) point.getY();
-                if ((x < 0) || (x >=  widthOriginal)
-                 || (y < 0) || (y >= heightOriginal)) {
-                    continue;
-                }
                 visitedPointCurveSet = visitedPointCurveMap.get(y);
                 if (visitedPointCurveSet == null) {
                     visitedPointCurveMap.put(y, visitedPointCurveSet = new HashSet<>());
@@ -166,6 +153,7 @@ public abstract class Fitter implements Runnable{
              distanceHausdorff(pointCurveSet, targetPointCurveSet),
              distanceHausdorff(targetPointCurveSet, pointCurveSet)
             );
+            System.out.println(distanceMaximum);
             if (distanceFit > distanceMaximum) {
                 distanceFit = distanceMaximum;
                 for (i = 0; i < pointControlArray.length; i++) {
@@ -178,6 +166,10 @@ public abstract class Fitter implements Runnable{
                 }
                 for (int yV : visitedPointCurveMap.keySet()) {
                     for (int xV : visitedPointCurveMap.get(yV)) {
+                        if ((xV < 0) || (xV >=  widthOriginal)
+                         || (yV < 0) || (yV >= heightOriginal)) {
+                            continue;
+                        }
                         xLow = xV * magnification;
                         xHigh = (xV + 1) * magnification;
                         yLow = yV * magnification;
@@ -189,7 +181,7 @@ public abstract class Fitter implements Runnable{
                         }
                     }
                 }
-                refresh();
+                refresh(distance);
             }
         }
     }

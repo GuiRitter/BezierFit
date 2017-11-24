@@ -140,8 +140,8 @@ public class Main {
                  getMagnification()
                 ){
                     @Override
-                    public void refresh() {
-                        GUI.refresh();
+                    public void refresh(double distance) {
+                        GUI.refresh(pointControlArray, distance);
                     }
                 };
                 (new Thread(fitter, "fitter")).start();

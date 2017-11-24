@@ -156,6 +156,15 @@ public abstract class Main {
         frame.repaint();
     }
 
+    public final void refresh(Point2D pointControlArray[], double distance) {
+        for (i = 0; i < pointControlArray.length; i++) {
+            ((DefaultListModel<Double>) (xList.getModel())).set(i, pointControlArray[i].getX());
+            ((DefaultListModel<Double>) (yList.getModel())).set(i, pointControlArray[i].getY());
+        }
+        errorField.setValue(distance);
+        refresh();
+    }
+
     public final void setEnabled(boolean enabled) {
         fileButton.setEnabled(enabled);
         initButton.setEnabled(enabled);
@@ -477,12 +486,12 @@ public abstract class Main {
         frame.getContentPane().add(curvePointAmountSpinner, gridBagConstraints);
 
         //* TODO test
-        ((DefaultListModel<Double>) (xList.getModel())).addElement(19d);
-        ((DefaultListModel<Double>) (xList.getModel())).addElement(10d);
-        ((DefaultListModel<Double>) (xList.getModel())).addElement(19d);
-        ((DefaultListModel<Double>) (yList.getModel())).addElement(00d);
-        ((DefaultListModel<Double>) (yList.getModel())).addElement(26d);
-        ((DefaultListModel<Double>) (yList.getModel())).addElement(51d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(0d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(0d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(0d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(3d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(4d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(5d);
         /**/
 
         JLabel errorLabel = new JLabel("error:");
