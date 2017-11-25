@@ -18,6 +18,8 @@ import javax.imageio.ImageIO;
  */
 public class Main {
 
+    private static final ConcurrentHashMap<Boolean, Double> curveStepWrapper = new ConcurrentHashMap<>();
+
     private static Fitter fitter;
 
     static final io.github.guiritter.bézier_fit.gui.Main GUI;
@@ -35,7 +37,7 @@ public class Main {
     static {
         targetImageList = new LinkedList<>();
 
-        GUI = new io.github.guiritter.bézier_fit.gui.Main(jumpMaximumWrapper) {
+        GUI = new io.github.guiritter.bézier_fit.gui.Main() {
 
             private int color[];
 
@@ -48,12 +50,6 @@ public class Main {
             private int heightMagnified;
 
             private int heightOriginal;
-
-            /**
-             * Time step used to compute the curve. Inverse to the amount of points
-             * in the curve.
-             */
-            private final Wrapper<Double> step = new Wrapper<>();
 
             private BufferedImage targetImage;
 
@@ -69,6 +65,7 @@ public class Main {
 
             @Override
             public void onCurveStepChanged(double curveStep) {
+                curveStepWrapper.put(true, curveStep);
             }
 
             @Override
@@ -129,14 +126,14 @@ public class Main {
                     return;
                 }
                 setEnabled(false);
-                step.value = getCurveStep();
+                curveStepWrapper.put(true, getCurveStep());
                 fitter = new Fitter(
                  pointCurveSet,
                  widthOriginal, heightOriginal,
                  pointControlArray,
                  jumpMaximumWrapper,
                  fittedRaster,
-                 step,
+                 curveStepWrapper,
                  getMagnification()
                 ){
                     @Override
@@ -145,6 +142,11 @@ public class Main {
                     }
                 };
                 (new Thread(fitter, "fitter")).start();
+            }
+
+            @Override
+            public void onJumpMaximumChanged(double jumpMaximum) {
+                jumpMaximumWrapper.put(true, jumpMaximum);
             }
 
             @Override

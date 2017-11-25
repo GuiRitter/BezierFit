@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.text.NumberFormat;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -71,8 +70,6 @@ public abstract class Main {
     private final JButton initButton;
 
     private final JFormattedTextField jumpField;
-
-    private final ConcurrentHashMap<Boolean, Double> jumpMaximumWrapper;
 
     private final JSpinner magnificationSpinner;
 
@@ -152,6 +149,8 @@ public abstract class Main {
     public abstract void onFileButtonPressed();
 
     public abstract void onInitButtonPressed();
+
+    public abstract void onJumpMaximumChanged(double jumpMaximum);
 
     public abstract void onMagnificationChanged(Byte magnification);
 
@@ -270,9 +269,7 @@ public abstract class Main {
         SPACE_HALF_DIMENSION = new Dimension(SPACE_HALF_INT, SPACE_HALF_INT);
     }
 
-    public Main(ConcurrentHashMap<Boolean, Double> jumpMaximumWrapper) {
-        this.jumpMaximumWrapper = jumpMaximumWrapper;
-
+    public Main () {
         frame = new JFrame("Bézier Fit");
         frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -361,7 +358,7 @@ public abstract class Main {
         jumpField.setValue(2);
         jumpField.addPropertyChangeListener("value", (PropertyChangeEvent evt) -> {
 
-            jumpMaximumWrapper.put(true, getJumpMaximum());
+            onJumpMaximumChanged(getJumpMaximum());
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -495,9 +492,9 @@ public abstract class Main {
         frame.getContentPane().add(curvePointAmountSpinner, gridBagConstraints);
 
         //* TODO test
-        ((DefaultListModel<Double>) (xList.getModel())).addElement(0d);
-        ((DefaultListModel<Double>) (xList.getModel())).addElement(0d);
-        ((DefaultListModel<Double>) (xList.getModel())).addElement(0d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(5d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(4d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(5d);
         ((DefaultListModel<Double>) (yList.getModel())).addElement(3d);
         ((DefaultListModel<Double>) (yList.getModel())).addElement(4d);
         ((DefaultListModel<Double>) (yList.getModel())).addElement(5d);
