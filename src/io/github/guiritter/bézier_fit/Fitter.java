@@ -32,6 +32,12 @@ public abstract class Fitter implements Runnable{
 
     private final BézierCurve curve;
 
+    /**
+     * Time step used to compute the curve. Inverse to the amount of points
+     * in the curve.
+     */
+    private final ConcurrentHashMap<Boolean, Double> curveStep;
+
     private double distance;
 
     private double distanceFit = POSITIVE_INFINITY;
@@ -40,7 +46,13 @@ public abstract class Fitter implements Runnable{
 
     private double distanceMinimum;
 
-    private final WritableRaster fittedRaster;
+    private double fittedDistance;
+
+    private final Point2D fittedPointControlArray[];
+
+    private final WritableRaster fittedContinuousRaster;
+
+    private final WritableRaster fittedDiscreteRaster;
 
     private final int heightMagnified;
 
@@ -56,23 +68,13 @@ public abstract class Fitter implements Runnable{
 
     private final Point2D pointControlArray[];
 
-    private final Point2D fittedPointControlArray[];
-
-    private final HashSet<Point2D> pointCurveContinuousSet = new HashSet<>();
-
-    private final HashSet<Point2D> pointCurveDiscreteSet = new HashSet<>();
+    private final HashSet<Point2D> pointCurveSet = new HashSet<>();
 
     private double radius;
 
     private static final double revolution = 2d * PI;
 
     private final Random RNG = new Random();
-
-    /**
-     * Time step used to compute the curve. Inverse to the amount of points
-     * in the curve.
-     */
-    private final ConcurrentHashMap<Boolean, Double> curveStep;
 
     /**
      * Time that is stepped from 0 to 1.
@@ -128,8 +130,7 @@ public abstract class Fitter implements Runnable{
     @Override
     public void run() {
         while (!Thread.interrupted()) {
-            pointCurveContinuousSet.clear();
-            pointCurveDiscreteSet.clear();
+            pointCurveSet.clear();
             visitedPointCurveMap.clear();
             for (i = 0; i < pointControlArray.length; i++) {
                 angle = revolution * RNG.nextDouble();
@@ -141,7 +142,6 @@ public abstract class Fitter implements Runnable{
             }
             for (t = 0; t <= 1; t += curveStep.get(true)) {
                 curve.op(t);
-                pointCurveContinuousSet.add(new Point2D.Double(point.getX(), point.getY()));
                 x = (int) point.getX();
                 y = (int) point.getY();
                 visitedPointCurveSet = visitedPointCurveMap.get(y);
@@ -151,22 +151,22 @@ public abstract class Fitter implements Runnable{
                 if (visitedPointCurveSet.contains(x)) {
                     continue;
                 }
-                pointCurveDiscreteSet.add(new Point2D.Double(x, y));
+                pointCurveSet.add(new Point2D.Double(x, y));
                 visitedPointCurveSet.add(x);
             }
             distanceMaximum = max(
-             distanceHausdorff(pointCurveDiscreteSet, targetPointCurveSet),
-             distanceHausdorff(targetPointCurveSet, pointCurveDiscreteSet)
+             distanceHausdorff(pointCurveSet, targetPointCurveSet),
+             distanceHausdorff(targetPointCurveSet, pointCurveSet)
             );
-            System.out.println(distanceMaximum);
             if (distanceFit > distanceMaximum) {
                 distanceFit = distanceMaximum;
+                fittedDistance = distanceFit;
                 for (i = 0; i < pointControlArray.length; i++) {
                     fittedPointControlArray[i].setLocation(pointControlArray[i]);
                 }
                 for (y = 0; y < heightMagnified; y++) {
                     for (x = 0; x < widthMagnified; x++) {
-                        fittedRaster.setPixel(x, y, transparency);
+                        fittedDiscreteRaster.setPixel(x, y, transparency);
                     }
                 }
                 for (int yV : visitedPointCurveMap.keySet()) {
@@ -181,24 +181,30 @@ public abstract class Fitter implements Runnable{
                         yHigh = (yV + 1) * magnification;
                         for (y = yLow; y < yHigh; y++) {
                             for (x = xLow; x < xHigh; x++) {
-                                fittedRaster.setPixel(x, y, colorTransparent);
+                                fittedDiscreteRaster.setPixel(x, y, colorTransparent);
                             }
                         }
                     }
                 }
-                for (Point2D pointF : pointCurveContinuousSet) {
-                    if ((pointF.getX() < 0) || (pointF.getX() >=  widthOriginal)
-                     || (pointF.getY() < 0) || (pointF.getY() >= heightOriginal)) {
-                        continue;
-                    }
-                    fittedRaster.setPixel(
-                     ((int) (pointF.getX() * ((double) magnification))),
-                     ((int) (pointF.getY() * ((double) magnification))),
-                     colorOpaque
-                    );
-                }
-                refresh(distance);
             }
+            for (y = 0; y < heightMagnified; y++) {
+                for (x = 0; x < widthMagnified; x++) {
+                    fittedContinuousRaster.setPixel(x, y, transparency);
+                }
+            }
+            for (t = 0; t <= 1; t += curveStep.get(true)) {
+                curve.op(t);
+                if ((point.getX() < 0) || (point.getX() >=  widthOriginal)
+                 || (point.getY() < 0) || (point.getY() >= heightOriginal)) {
+                    continue;
+                }
+                fittedContinuousRaster.setPixel(
+                 (int) (point.getX() * ((double) magnification)),
+                 (int) (point.getY() * ((double) magnification)),
+                 colorOpaque
+                );
+            }
+            refresh(fittedDistance);
         }
     }
 
@@ -206,8 +212,10 @@ public abstract class Fitter implements Runnable{
      HashSet<Point2D> targetPointCurveSet,
      int width, int height,
      Point2D pointControlArray[],
+     Point2D fittedPointControlArray[],
      ConcurrentHashMap<Boolean, Double> jumpMaximum,
-     WritableRaster fittedRaster,
+     WritableRaster fittedDiscreteRaster,
+     WritableRaster fittedContinuousRaster,
      ConcurrentHashMap<Boolean, Double> curveStep,
      byte magnification) {
         this.targetPointCurveSet = targetPointCurveSet;
@@ -216,15 +224,10 @@ public abstract class Fitter implements Runnable{
          widthMagnified =  widthOriginal * magnification;
         heightMagnified = heightOriginal * magnification;
         this.pointControlArray = pointControlArray;
-        fittedPointControlArray = new Point2D[pointControlArray.length];
-        for (i = 0; i < pointControlArray.length; i++) {
-            fittedPointControlArray[i] = new Point2D.Double(
-             pointControlArray[i].getX(),
-             pointControlArray[i].getY()
-            );
-        }
+        this.fittedPointControlArray = fittedPointControlArray;
         this.jumpMaximum = jumpMaximum;
-        this.fittedRaster = fittedRaster;
+        this.fittedDiscreteRaster = fittedDiscreteRaster;
+        this.fittedContinuousRaster = fittedContinuousRaster;
         this.curveStep = curveStep;
         this.magnification = magnification;
         curve = new BézierCurve(pointControlArray, point = new Point2D.Double());

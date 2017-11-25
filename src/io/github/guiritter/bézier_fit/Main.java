@@ -22,6 +22,8 @@ public class Main {
 
     private static Fitter fitter;
 
+    private static Point2D fittedPointControlArray[];
+
     static final io.github.guiritter.bézier_fit.gui.Main GUI;
 
     private static Double jumpMaximum;
@@ -43,9 +45,13 @@ public class Main {
 
             private File file;
 
-            private BufferedImage fittedImage;
+            private BufferedImage fittedContinuousImage;
 
-            private WritableRaster fittedRaster;
+            private WritableRaster fittedContinuousRaster;
+
+            private BufferedImage fittedDiscreteImage;
+
+            private WritableRaster fittedDiscreteRaster;
 
             private int heightMagnified;
 
@@ -92,9 +98,11 @@ public class Main {
                             }
                         }
                     }
-                    fittedImage = new BufferedImage(widthOriginal, heightOriginal, TYPE_INT_ARGB);
-                    fittedRaster = fittedImage.getRaster();
-                    setImage(targetImage, fittedImage);
+                    fittedDiscreteImage = new BufferedImage(widthOriginal, heightOriginal, TYPE_INT_ARGB);
+                    fittedDiscreteRaster = fittedDiscreteImage.getRaster();
+                    fittedContinuousImage = new BufferedImage(widthOriginal, heightOriginal, TYPE_INT_ARGB);
+                    fittedContinuousRaster = fittedContinuousImage.getRaster();
+                    setImage(targetImage, fittedDiscreteImage, fittedContinuousImage);
                     try {
                         setFileText(file.getCanonicalPath());
                     } catch (IOException ex) {
@@ -121,6 +129,7 @@ public class Main {
                     showWarning("please insert at least two points");
                     return;
                 }
+                fittedPointControlArray = getPointArray();
                 if (pointCurveSet == null) {
                     showWarning("please insert an image");
                     return;
@@ -131,14 +140,16 @@ public class Main {
                  pointCurveSet,
                  widthOriginal, heightOriginal,
                  pointControlArray,
+                 fittedPointControlArray,
                  jumpMaximumWrapper,
-                 fittedRaster,
+                 fittedDiscreteRaster,
+                 fittedContinuousRaster,
                  curveStepWrapper,
                  getMagnification()
                 ){
                     @Override
                     public void refresh(double distance) {
-                        GUI.refresh(pointControlArray, distance);
+                        GUI.refresh(fittedPointControlArray, distance);
                     }
                 };
                 (new Thread(fitter, "fitter")).start();
@@ -158,8 +169,10 @@ public class Main {
                     widthMagnified = magnification * targetImageList.getFirst().getWidth();
                     heightMagnified = magnification * targetImageList.getFirst().getHeight();
                     targetImage = new BufferedImage(widthMagnified, heightMagnified, TYPE_BYTE_GRAY);
-                    fittedImage = new BufferedImage(widthMagnified, heightMagnified, TYPE_INT_ARGB);
-                    fittedRaster = fittedImage.getRaster();
+                    fittedDiscreteImage = new BufferedImage(widthMagnified, heightMagnified, TYPE_INT_ARGB);
+                    fittedDiscreteRaster = fittedDiscreteImage.getRaster();
+                    fittedContinuousImage = new BufferedImage(widthMagnified, heightMagnified, TYPE_INT_ARGB);
+                    fittedContinuousRaster = fittedContinuousImage.getRaster();
                     for (y = 0; y < heightMagnified; y++) {
                         for (x = 0; x < widthMagnified; x++) {
                             targetImage.setRGB(x, y, targetImageList.getFirst().getRGB(x / magnification, y / magnification));
@@ -167,7 +180,7 @@ public class Main {
                     }
                     targetImageList.addLast(targetImage);
                 }
-                setImage(targetImageList.get(magnification - 1), fittedImage);
+                setImage(targetImageList.get(magnification - 1), fittedDiscreteImage, fittedContinuousImage);
             }
         };
     }

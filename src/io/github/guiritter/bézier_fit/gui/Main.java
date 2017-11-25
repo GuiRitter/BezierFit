@@ -155,7 +155,7 @@ public abstract class Main {
     public abstract void onMagnificationChanged(Byte magnification);
 
     public final void refresh() {
-        frame.revalidate();
+//        frame.revalidate(); // causes lock up, maybe not necessary
         frame.repaint();
     }
 
@@ -195,10 +195,16 @@ public abstract class Main {
     /**
      * Sets the preview image and adjusts the interface.
      * @param targetImage
-     * @param fittedImage
+     * @param fittedDiscreteImage
+     * @param fittedContinuousImage
      */
-    public final void setImage(BufferedImage targetImage, BufferedImage fittedImage) {
-        previewComponent.images.set(1, fittedImage);
+    public final void setImage(
+     BufferedImage targetImage,
+     BufferedImage fittedDiscreteImage,
+     BufferedImage fittedContinuousImage
+    ) {
+        previewComponent.images.set(1, fittedDiscreteImage);
+        previewComponent.images.set(2, fittedContinuousImage);
         setImage(targetImage);
     }
 
@@ -491,10 +497,10 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(0, SPACE_INT, SPACE_INT, SPACE_HALF_INT);
         frame.getContentPane().add(curvePointAmountSpinner, gridBagConstraints);
 
-        //* TODO test
-        ((DefaultListModel<Double>) (xList.getModel())).addElement(5d);
-        ((DefaultListModel<Double>) (xList.getModel())).addElement(4d);
-        ((DefaultListModel<Double>) (xList.getModel())).addElement(5d);
+        /* test
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(0d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(0d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(0d);
         ((DefaultListModel<Double>) (yList.getModel())).addElement(3d);
         ((DefaultListModel<Double>) (yList.getModel())).addElement(4d);
         ((DefaultListModel<Double>) (yList.getModel())).addElement(5d);
@@ -519,6 +525,7 @@ public abstract class Main {
         frame.getContentPane().add(errorField, gridBagConstraints);
 
         previewComponent = new ImageComponentMultiple();
+        previewComponent.images.add(null);
         previewComponent.images.add(null);
         previewComponent.images.add(null);
         gridBagConstraints = new GridBagConstraints();
