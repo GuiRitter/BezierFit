@@ -50,7 +50,11 @@ public abstract class Fitter implements Runnable{
 
     private final Point2D fittedPointControlArray[];
 
+    private final int fittedContinuousBuffer[][][];
+
     private final WritableRaster fittedContinuousRaster;
+
+    private final int fittedDiscreteBuffer[][][];
 
     private final WritableRaster fittedDiscreteRaster;
 
@@ -166,7 +170,7 @@ public abstract class Fitter implements Runnable{
                 }
                 for (y = 0; y < heightMagnified; y++) {
                     for (x = 0; x < widthMagnified; x++) {
-                        fittedDiscreteRaster.setPixel(x, y, transparency);
+                        fittedDiscreteBuffer[y][x] = transparency;
                     }
                 }
                 for (int yV : visitedPointCurveMap.keySet()) {
@@ -181,15 +185,20 @@ public abstract class Fitter implements Runnable{
                         yHigh = (yV + 1) * magnification;
                         for (y = yLow; y < yHigh; y++) {
                             for (x = xLow; x < xHigh; x++) {
-                                fittedDiscreteRaster.setPixel(x, y, colorTransparent);
+                                fittedDiscreteBuffer[y][x] = colorTransparent;
                             }
                         }
+                    }
+                }
+                for (y = 0; y < heightMagnified; y++) {
+                    for (x = 0; x < widthMagnified; x++) {
+                        fittedDiscreteRaster.setPixel(x, y, fittedDiscreteBuffer[y][x]);
                     }
                 }
             }
             for (y = 0; y < heightMagnified; y++) {
                 for (x = 0; x < widthMagnified; x++) {
-                    fittedContinuousRaster.setPixel(x, y, transparency);
+                    fittedContinuousBuffer[y][x] = transparency;
                 }
             }
             for (t = 0; t <= 1; t += curveStep.get(true)) {
@@ -198,11 +207,15 @@ public abstract class Fitter implements Runnable{
                  || (point.getY() < 0) || (point.getY() >= heightOriginal)) {
                     continue;
                 }
-                fittedContinuousRaster.setPixel(
-                 (int) (point.getX() * ((double) magnification)),
-                 (int) (point.getY() * ((double) magnification)),
-                 colorOpaque
-                );
+                fittedContinuousBuffer
+                 [(int) (point.getY() * ((double) magnification))]
+                 [(int) (point.getX() * ((double) magnification))]
+                 = colorOpaque;
+            }
+            for (y = 0; y < heightMagnified; y++) {
+                for (x = 0; x < widthMagnified; x++) {
+                    fittedContinuousRaster.setPixel(x, y, fittedContinuousBuffer[y][x]);
+                }
             }
             refresh(fittedDistance);
         }
@@ -231,5 +244,7 @@ public abstract class Fitter implements Runnable{
         this.curveStep = curveStep;
         this.magnification = magnification;
         curve = new BézierCurve(pointControlArray, point = new Point2D.Double());
+        fittedContinuousBuffer = new int[heightMagnified][widthMagnified][4];
+        fittedDiscreteBuffer = new int[heightMagnified][widthMagnified][4];
     }
 }
