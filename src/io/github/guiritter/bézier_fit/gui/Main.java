@@ -13,8 +13,10 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.text.NumberFormat;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -69,6 +71,8 @@ public abstract class Main {
     private final JButton initButton;
 
     private final JFormattedTextField jumpField;
+
+    private final ConcurrentHashMap<Boolean, Double> jumpMaximumWrapper;
 
     private final JSpinner magnificationSpinner;
 
@@ -266,7 +270,9 @@ public abstract class Main {
         SPACE_HALF_DIMENSION = new Dimension(SPACE_HALF_INT, SPACE_HALF_INT);
     }
 
-    public Main() {
+    public Main(ConcurrentHashMap<Boolean, Double> jumpMaximumWrapper) {
+        this.jumpMaximumWrapper = jumpMaximumWrapper;
+
         frame = new JFrame("Bézier Fit");
         frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -352,8 +358,11 @@ public abstract class Main {
         format.setMaximumFractionDigits(Integer.MAX_VALUE);
 
         jumpField = new JFormattedTextField(format);
-        jumpField.setValue(5);
-//        jumpField.addPropertyChangeListener("value", new OutputListener(outputMinimumXField, outputMinimumX, outputMinimumX, outputMaximumX, fitX, width));
+        jumpField.setValue(2);
+        jumpField.addPropertyChangeListener("value", (PropertyChangeEvent evt) -> {
+
+            jumpMaximumWrapper.put(true, getJumpMaximum());
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;

@@ -35,7 +35,7 @@ public class Main {
     static {
         targetImageList = new LinkedList<>();
 
-        GUI = new io.github.guiritter.bézier_fit.gui.Main() {
+        GUI = new io.github.guiritter.bézier_fit.gui.Main(jumpMaximumWrapper) {
 
             private int color[];
 

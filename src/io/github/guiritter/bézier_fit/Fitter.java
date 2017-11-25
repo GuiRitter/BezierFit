@@ -12,7 +12,6 @@ import static java.lang.Math.cos;
 import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -200,7 +199,13 @@ public abstract class Fitter implements Runnable{
          widthMagnified =  widthOriginal * magnification;
         heightMagnified = heightOriginal * magnification;
         this.pointControlArray = pointControlArray;
-        fittedPointControlArray = Arrays.copyOf(pointControlArray, pointControlArray.length);
+        fittedPointControlArray = new Point2D[pointControlArray.length];
+        for (i = 0; i < pointControlArray.length; i++) {
+            fittedPointControlArray[i] = new Point2D.Double(
+             pointControlArray[i].getX(),
+             pointControlArray[i].getY()
+            );
+        }
         this.jumpMaximum = jumpMaximum;
         this.fittedRaster = fittedRaster;
         this.step = step;
