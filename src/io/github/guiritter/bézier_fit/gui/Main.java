@@ -485,7 +485,7 @@ public abstract class Main {
         gridBagConstraints.insets = new Insets(SPACE_HALF_INT, SPACE_INT, 0, SPACE_HALF_INT);
         frame.getContentPane().add(curvePointAmountLabel, gridBagConstraints);
 
-        curvePointAmountSpinner = new JSpinner(new SpinnerNumberModel(100, 0, Long.MAX_VALUE, 1));
+        curvePointAmountSpinner = new JSpinner(new SpinnerNumberModel(1000, 0, Long.MAX_VALUE, 1));
         curvePointAmountSpinner.addChangeListener((ChangeEvent e) -> {
 
             onCurveStepChanged(getCurveStep());
@@ -498,12 +498,99 @@ public abstract class Main {
         frame.getContentPane().add(curvePointAmountSpinner, gridBagConstraints);
 
         /* test
-        ((DefaultListModel<Double>) (xList.getModel())).addElement(0d);
-        ((DefaultListModel<Double>) (xList.getModel())).addElement(0d);
-        ((DefaultListModel<Double>) (xList.getModel())).addElement(0d);
-        ((DefaultListModel<Double>) (yList.getModel())).addElement(3d);
-        ((DefaultListModel<Double>) (yList.getModel())).addElement(4d);
-        ((DefaultListModel<Double>) (yList.getModel())).addElement(5d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(39d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(39d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement( 0d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(22d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(30d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(52d);
+        /**/
+
+        /* test
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(25d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement( 1d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(25d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(26d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(26d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(51d);
+        /**/
+
+        /* test
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(37d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(37d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(48d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement( 0d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(24d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(23d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(30d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(28d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(51d);
+        /**/
+
+        //* test
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(48d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(47d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(22d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(48d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(48d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement( 1d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(23d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(17d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(26d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(35d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(24d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(51d);
+        /**/
+
+        /* test
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(48d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(43d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(40d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(39d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(44d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement( 1d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(16d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(19d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(23d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(28d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(32d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(34d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(50d);
+        /**/
+
+        /* test
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(48d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(47d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(40d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(39d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(40d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(48d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(48d);
+        ((DefaultListModel<Double>) (xList.getModel())).addElement(49d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement( 1d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(16d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(17d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(22d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(25d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(29d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(33d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(35d);
+        ((DefaultListModel<Double>) (yList.getModel())).addElement(51d);
         /**/
 
         JLabel errorLabel = new JLabel("error:");

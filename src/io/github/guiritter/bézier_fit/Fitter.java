@@ -58,6 +58,8 @@ public abstract class Fitter implements Runnable{
 
     private final WritableRaster fittedDiscreteRaster;
 
+    private boolean found;
+
     private final int heightMagnified;
 
     private final int heightOriginal;
@@ -119,16 +121,46 @@ public abstract class Fitter implements Runnable{
     }
 
     public final double distanceHausdorff(Collection<Point2D> set0, Collection<Point2D> set1) {
-        double distanceMaximumLocal = NEGATIVE_INFINITY;
+        distanceMaximum = NEGATIVE_INFINITY;
         for (Point2D point0 : set0) {
             distanceMinimum = POSITIVE_INFINITY;
             for (Point2D point1 : set1) {
                 distance = distanceEuclidean(point0, point1);
                 distanceMinimum = min(distanceMinimum, distance);
             }
-            distanceMaximumLocal = max(distanceMaximumLocal, distanceMinimum);
+            distanceMaximum = max(distanceMaximum, distanceMinimum);
         }
-        return distanceMaximumLocal;
+        return distanceMaximum;
+    }
+
+    public final double distanceMatch(Collection<Point2D> set0, Collection<Point2D> set1) {
+        distanceMaximum = 0;
+        for (Point2D point0 : set0) {
+            found = false;
+            for (Point2D point1 : set1) {
+                if (pointEqual(point0, point1)) {
+                    distanceMaximum--;
+                    found = true;
+                    break;
+                }
+                if (!found) {
+                    distanceMaximum += 0.01;
+                }
+            }
+        }
+        return distanceMaximum;
+    }
+
+    public static boolean pointEqual(Point2D point0, Point2D point1) {
+        return pointEqualX(point0, point1) && pointEqualY(point0, point1);
+    }
+
+    public static boolean pointEqualX(Point2D point0, Point2D point1) {
+        return ((int) point0.getX()) == ((int) point1.getX());
+    }
+
+    public static boolean pointEqualY(Point2D point0, Point2D point1) {
+        return ((int) point0.getY()) == ((int) point1.getY());
     }
 
     @Override
@@ -162,6 +194,9 @@ public abstract class Fitter implements Runnable{
              distanceHausdorff(pointCurveSet, targetPointCurveSet),
              distanceHausdorff(targetPointCurveSet, pointCurveSet)
             );
+//            distanceMaximum
+//             = distanceMatch(pointCurveSet, targetPointCurveSet)
+//             + distanceMatch(targetPointCurveSet, pointCurveSet);
             if (distanceFit > distanceMaximum) {
                 distanceFit = distanceMaximum;
                 fittedDistance = distanceFit;
