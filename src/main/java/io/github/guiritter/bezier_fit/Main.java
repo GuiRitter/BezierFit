@@ -1,4 +1,4 @@
-package io.github.guiritter.bézier_fit;
+package io.github.guiritter.bezier_fit;
 
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -24,7 +24,7 @@ public class Main {
 
     private static Point2D fittedPointControlArray[];
 
-    static final io.github.guiritter.bézier_fit.gui.Main GUI;
+    static final io.github.guiritter.bezier_fit.gui.Main GUI;
 
     private static Double jumpMaximum;
 
@@ -39,7 +39,7 @@ public class Main {
     static {
         targetImageList = new LinkedList<>();
 
-        GUI = new io.github.guiritter.bézier_fit.gui.Main() {
+        GUI = new io.github.guiritter.bezier_fit.gui.Main() {
 
             private int color[];
 

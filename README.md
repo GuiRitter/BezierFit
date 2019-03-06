@@ -18,3 +18,5 @@ You have the following features:
 * See the control points' locations and metric value of the last fitted curve
 
 Requires my [ImageComponent](https://github.com/GuiRitter/ImageComponent) library.
+
+[A few words about Maven.](https://gist.github.com/GuiRitter/1834bd024756e08ab422026a7cd24605)

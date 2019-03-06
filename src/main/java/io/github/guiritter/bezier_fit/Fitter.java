@@ -1,6 +1,6 @@
-package io.github.guiritter.bézier_fit;
+package io.github.guiritter.bezier_fit;
 
-import io.github.guiritter.bézier_fit.math.BézierCurve;
+import io.github.guiritter.bezier_fit.math.BezierCurve;
 import java.awt.geom.Point2D;
 import java.awt.image.WritableRaster;
 import static java.lang.Double.NEGATIVE_INFINITY;
@@ -30,7 +30,7 @@ public abstract class Fitter implements Runnable{
 
     private final int colorTransparent[] = new int[]{0, 128, 0, 128};
 
-    private final BézierCurve curve;
+    private final BezierCurve curve;
 
     /**
      * Time step used to compute the curve. Inverse to the amount of points
@@ -278,7 +278,7 @@ public abstract class Fitter implements Runnable{
         this.fittedContinuousRaster = fittedContinuousRaster;
         this.curveStep = curveStep;
         this.magnification = magnification;
-        curve = new BézierCurve(pointControlArray, point = new Point2D.Double());
+        curve = new BezierCurve(pointControlArray, point = new Point2D.Double());
         fittedContinuousBuffer = new int[heightMagnified][widthMagnified][4];
         fittedDiscreteBuffer = new int[heightMagnified][widthMagnified][4];
     }

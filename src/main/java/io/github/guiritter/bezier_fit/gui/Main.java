@@ -1,6 +1,6 @@
-package io.github.guiritter.bézier_fit.gui;
+package io.github.guiritter.bezier_fit.gui;
 
-import io.github.guiritter.imagecomponent.ImageComponentMultiple;
+import io.github.guiritter.image_component.ImageComponentMultiple;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -46,7 +46,6 @@ import javax.swing.event.ChangeEvent;
  *
  * @author Guilherme Alan Ritter
  */
-@SuppressWarnings("CallToPrintStackTrace")
 public abstract class Main {
 
     private final JButton addButton;
@@ -182,7 +181,7 @@ public abstract class Main {
 
     /**
      * Sets the preview image and adjusts the interface.
-     * @param targetImage
+     * @param targetImage target curve image
      */
     public final void setImage(BufferedImage targetImage) {
         previewComponent.images.set(0, targetImage);
@@ -194,9 +193,9 @@ public abstract class Main {
 
     /**
      * Sets the preview image and adjusts the interface.
-     * @param targetImage
-     * @param fittedDiscreteImage
-     * @param fittedContinuousImage
+     * @param targetImage target curve image
+     * @param fittedDiscreteImage discrete representation image of fitted curve 
+     * @param fittedContinuousImage continuos representation image of fitted curve 
      */
     public final void setImage(
      BufferedImage targetImage,
@@ -215,9 +214,9 @@ public abstract class Main {
     /**
      * Prints a stack trace and shows a dialog
      * displaying either a warning or an error.
-     * @param ex
-     * @param title
-     * @param messageType
+     * @param ex in order to know what happened and where
+     * @param title dialog title
+     * @param messageType dialog message
      */
     public void showDialog(Exception ex, String title, int messageType) {
         ex.printStackTrace();
@@ -227,7 +226,7 @@ public abstract class Main {
     /**
      * Prints a stack trace and shows a dialog
      * displaying an error.
-     * @param ex
+     * @param ex in order to know what happened and where
      */
     public void showError(Exception ex) {
         showDialog(ex, "error", ERROR_MESSAGE);
@@ -236,7 +235,7 @@ public abstract class Main {
     /**
      * Prints a stack trace and shows a dialog
      * displaying a warning.
-     * @param ex
+     * @param ex in order to know what happened and where
      */
     public void showWarning(Exception ex) {
         showDialog(ex, "warning", WARNING_MESSAGE);
@@ -244,7 +243,7 @@ public abstract class Main {
 
     /**
      * Shows a dialog displaying a warning.
-     * @param message
+     * @param message dialog message
      */
     public void showWarning(String message) {
         JOptionPane.showMessageDialog(frame, message, "warning", WARNING_MESSAGE);

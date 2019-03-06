@@ -1,4 +1,4 @@
-package io.github.guiritter.bézier_fit;
+package io.github.guiritter.bezier_fit;
 
 /**
  * Wraps an object so it can be passed by reference between objects and,

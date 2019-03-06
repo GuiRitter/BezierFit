@@ -1,4 +1,11 @@
-/build/
-/nbproject/private/
+*.class
+target/
+bin/
+.project
+.classpath
+.settings/
+.vscode/
 
-image/Thumbs\.db
+# Package Files #
+*.jar
+hs_err_pid*
